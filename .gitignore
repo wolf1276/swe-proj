@@ -1,0 +1,48 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js
+.next/
+.next-docs/
+out/
+next-env.d.ts
+
+# production
+build/
+dist/
+
+# environment
+.env
+.env*.local
+
+# local mail sink output (development mail adapter)
+.mailsink/
+.mail-e2e/
+
+# generated prisma client
+src/generated/
+
+# test evidence and playwright artifacts
+tests/evidence/
+test-results/
+playwright-report/
+.blob-report/
+.playwright/
+
+# misc
+*.tsbuildinfo
+.DS_Store
+*.log
+
+.mailsink-test/
+.mail-e2e/
+
+.next-e2e/
+
+.next-perf/
+.mail-perf/
+
+.test-runtime/
+
+.mail-recovery/

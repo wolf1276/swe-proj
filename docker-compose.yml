@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: campustrade-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: campustrade
+      POSTGRES_PASSWORD: campustrade-local-dev
+      POSTGRES_DB: campustrade
+    ports:
+      - "5432:5432"
+    volumes:
+      - campustrade-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campustrade -d campustrade"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  campustrade-pgdata:

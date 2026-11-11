@@ -1,0 +1,251 @@
+// CampusTrade database schema.
+//
+// The User/Session/Account/Verification models are the tables required by
+// Better Auth 1.7.18 (core schema + admin plugin fields: role, banned,
+// banReason, banExpires on user; impersonatedBy on session). They must keep
+// these exact names/fields; verify with `pnpm exec auth generate` after any
+// auth configuration change.
+//
+// Category/Listing/ContactRequest/ListingReport/AuditEvent are the CampusTrade
+// domain tables described in data-model.md (D1/D2/D3 are logical table groups
+// in this single PostgreSQL database).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Better Auth core tables (do not rename)
+// ---------------------------------------------------------------------------
+
+model User {
+  id              String    @id
+  name            String
+  email           String    @unique
+  emailVerified   Boolean   @default(false)
+  image           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  // admin plugin fields
+  role            String?
+  banned          Boolean?
+  banReason       String?
+  banExpires      DateTime?
+  // CampusTrade additional field (set when mailbox verification succeeds)
+  emailVerifiedAt DateTime?
+
+  sessions       Session[]
+  accounts       Account[]
+  listings       Listing[]
+  contactRequestsSent     ContactRequest[] @relation("ContactRequester")
+  contactRequestsReceived ContactRequest[] @relation("ContactOwner")
+  reportsFiled   ListingReport[]
+  reportsReviewed ListingReport[] @relation("ReportReviewer")
+  auditEvents    AuditEvent[]
+
+  @@index([banned])
+}
+
+model Session {
+  id            String   @id
+  expiresAt     DateTime
+  token         String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  ipAddress     String?
+  userAgent     String?
+  userId        String
+  impersonatedBy String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, expiresAt])
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([identifier])
+  @@index([identifier, expiresAt])
+}
+
+// ---------------------------------------------------------------------------
+// CampusTrade domain tables
+// ---------------------------------------------------------------------------
+
+model Category {
+  id        String    @id @default(uuid())
+  slug      String    @unique
+  name      String
+  sortOrder Int       @default(0)
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  listings Listing[]
+}
+
+enum OfferType {
+  sale
+  donation
+}
+
+enum Condition {
+  new
+  good
+  fair
+}
+
+enum Availability {
+  available
+  unavailable
+}
+
+enum ModerationState {
+  visible
+  removed
+}
+
+enum ReportState {
+  pending
+  dismissed
+  actioned
+}
+
+enum ReportReason {
+  misleading
+  inappropriate
+  prohibited_item
+  spam
+  other
+}
+
+enum NotificationStatus {
+  pending
+  sent
+  failed
+}
+
+model Listing {
+  id             String          @id @default(uuid())
+  ownerId        String
+  title          String
+  description    String
+  categoryId     String
+  offerType      OfferType
+  priceMinor     Int?
+  currency       String          @default("INR")
+  condition       Condition
+  availability   Availability
+  moderationState ModerationState @default(visible)
+  deletedAt      DateTime?
+  version        Int             @default(1)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  owner     User            @relation(fields: [ownerId], references: [id])
+  category  Category        @relation(fields: [categoryId], references: [id])
+  contacts  ContactRequest[]
+  reports   ListingReport[]
+
+  @@index([ownerId, createdAt])
+  @@index([categoryId, availability, moderationState, createdAt])
+  @@index([moderationState, createdAt])
+  @@index([offerType, moderationState, deletedAt])
+}
+
+model ContactRequest {
+  id                 String             @id @default(uuid())
+  listingId          String
+  requesterId       String
+  ownerId            String
+  message            String?
+  idempotencyKey     String?
+  notificationStatus NotificationStatus @default(pending)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  listing   Listing @relation(fields: [listingId], references: [id])
+  requester User    @relation("ContactRequester", fields: [requesterId], references: [id])
+  owner     User    @relation("ContactOwner", fields: [ownerId], references: [id])
+
+  @@unique([listingId, requesterId])
+  @@index([requesterId, createdAt])
+  @@index([ownerId, createdAt])
+}
+
+model ListingReport {
+  id           String      @id @default(uuid())
+  listingId    String
+  reporterId   String
+  reason       ReportReason
+  details      String?
+  state        ReportState @default(pending)
+  reviewerId   String?
+  reviewReason String?
+  resolvedAt   DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  listing   Listing @relation(fields: [listingId], references: [id])
+  reporter  User    @relation(fields: [reporterId], references: [id])
+  reviewer User?   @relation("ReportReviewer", fields: [reviewerId], references: [id])
+
+  @@index([state, createdAt])
+  @@index([listingId, reporterId, state])
+}
+
+model AuditEvent {
+  id         String   @id @default(uuid())
+  actorId    String?
+  action     String
+  targetType String
+  targetId   String
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([targetType, targetId, createdAt])
+  @@index([actorId, createdAt])
+}
+
+// Shared database counters for mutation abuse protection (not process-local).
+model RateLimitBucket {
+  key       String @id
+  count     Int
+  expiresAt DateTime
+  @@index([expiresAt])
+}
