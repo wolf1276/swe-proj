@@ -43,3 +43,7 @@ Keep current task progress in status.md; preserve detailed test runs and defects
 - T13: README/runbook, demo, traceability and local visual handoff updated. Native Figma, institutional configuration, alpha/beta/UAT and human signatures remain outstanding.
 
 Next external actions: obtain the missing decisions in decisions.md, import/review the visual artifacts, authorize/configure staging, then rerun external email, workload and availability acceptance. Do not repeat completed local implementation while waiting for those facts.
+
+### Demo preflight follow-up — 11 November 2026
+
+- DONE: start/reuse local demo, restore synthetic fixtures and rerun unit (52), integration (24), production-browser (8 across Chromium/Firefox) checks; all passed. See status.md for evidence and external acceptance limits.

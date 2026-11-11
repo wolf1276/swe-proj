@@ -29,3 +29,11 @@ Read [validation.md](validation.md) for actual commands, raw evidence links, FR/
 No further local feature implementation is needed for this handoff. Resolve the external dependencies in decisions.md: real domain/mail configuration and disclosure/moderation/retention policies; native Figma delivery; agreed normal workload/target; hosting and approved uptime window; human alpha/beta/UAT and signatures. Then configure authorized staging and execute external acceptance. T03/T11/T12/T13 remain externally blocked as detailed in tasks.md; never convert these to fabricated passes.
 
 Existing app on localhost:3000 returned health 200, sign-in 200 and anonymous catalogue 401 during the final smoke. Test-only listeners are stopped after runs; PostgreSQL and synthetic evidence databases remain available locally. No production availability or external email delivery is claimed.
+
+## Demo preflight rerun — 11 November 2026, 19:02 IST
+
+`pnpm demo` restored synthetic fixtures and confirmed the existing localhost:3000 server. Fresh `pnpm test:unit` passed 52/52, `pnpm test:int` passed 24/24 against the separate PostgreSQL test database, and `pnpm test:e2e` passed 8/8 across Chromium and Firefox (37.7s), including its optimized production build. Local health returned `{"status":"ok","database":"up"}`. These reruns do not remeasure capacity, real campus delivery or availability acceptance.
+
+A 121-second silent UI walkthrough was recorded successfully and converted to artifacts/demo/campustrade-demo.mp4 (1440×900); recording assertions passed for owner edit, donation, buyer contact, owner inbox, admin removal and buyer search visibility. Preview frame inspected. Demo fixtures were restored afterward with `pnpm demo --prepare-only`, ready for another presentation.
+
+The single MP4 was replaced with a slower 121-second recording featuring a visible pointer, click highlights and donation availability toggles. Recording assertions passed; demo fixtures restored afterward. Intermediate WebM files removed, leaving one video.

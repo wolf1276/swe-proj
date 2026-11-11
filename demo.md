@@ -47,3 +47,7 @@ Do not reuse source signature fields as if approval has occurred. Team roles are
 Local visual package: [four grayscale SVGs and import handoff](docs/academic-artifacts.md), [clickable local prototype](docs/prototype.html). This is preparation for native Figma delivery, not a claim that the required Figma workspace artifact exists.
 
 Use `operator@staff.example` to demonstrate admin-only access without student eligibility, and `admin@campus.example` for the synthetic dual-eligible demo admin. A real newly provisioned administrator receives no student mailbox-proof timestamp from the provisioning command.
+
+## Recorded local walkthrough — 11 November 2026
+
+[Silent MP4 walkthrough](artifacts/demo/campustrade-demo.mp4) (121 seconds, 1440×900): owner edits the textbook price, shows a donation, buyer expresses interest and opens contacts, owner opens the inbox, admin reviews/removes the calculator, buyer confirms it is absent. The recording script asserts these transitions; it is available at artifacts/demo/record-demo.cjs. Demo fixtures were restored after recording. Use the five-minute script above for a narrated presentation including verification and user management.
